@@ -1,4 +1,5 @@
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,6 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import dev.icerock.moko.mvvm.compose.getViewModel
 import dev.icerock.moko.mvvm.compose.viewModelFactory
 import io.kamel.image.KamelImage
@@ -51,17 +55,16 @@ fun BirdAppTheme(
 @Composable
 fun App() {
     BirdAppTheme {
-        val birdsViewModel = getViewModel(Unit, viewModelFactory { BirdsViewModel() })
-        val uiState by birdsViewModel.uiState.collectAsState()
-        LaunchedEffect(birdsViewModel) {
-            birdsViewModel.updateImages()
-        }
-        BirdsPage(uiState, onSelectCategory = { birdsViewModel.selectCategory(it) })
+        Navigator(screen = BirdsListScreen())
     }
 }
 
 @Composable
-fun BirdsPage(uiState: BirdsUiState, onSelectCategory: (String) -> Unit) {
+fun BirdsPage(
+    uiState: BirdsUiState,
+    onCategorySelect: (String) -> Unit,
+    onBirdSelect: () -> Unit
+) {
     Column(
         Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -73,7 +76,7 @@ fun BirdsPage(uiState: BirdsUiState, onSelectCategory: (String) -> Unit) {
         ) {
             for (category in uiState.categories) {
                 Button(
-                    onClick = { onSelectCategory(category) },
+                    onClick = { onCategorySelect(category) },
                     modifier = Modifier.aspectRatio(1.0f).weight(1.0f)
                 ) {
                     Text(category)
@@ -91,7 +94,7 @@ fun BirdsPage(uiState: BirdsUiState, onSelectCategory: (String) -> Unit) {
             ) {
 
                 items(uiState.selectedImages) { image ->
-                    BirdImageCell(image)
+                    BirdImageCell(image, onBirdSelect = onBirdSelect)
                 }
             }
         }
@@ -99,11 +102,17 @@ fun BirdsPage(uiState: BirdsUiState, onSelectCategory: (String) -> Unit) {
 }
 
 @Composable
-fun BirdImageCell(image: BirdImage) {
+fun BirdImageCell(
+    image: BirdImage,
+    onBirdSelect: () -> Unit
+) {
     KamelImage(
         resource = asyncPainterResource("https://sebastianaigner.github.io/demo-image-api/${image.path}"),
         contentDescription = "${image.category} by ${image.author}",
         contentScale = ContentScale.Crop,
-        modifier = Modifier.fillMaxWidth().aspectRatio(1.0f),
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(1.0f)
+            .clickable { onBirdSelect() },
     )
 }
