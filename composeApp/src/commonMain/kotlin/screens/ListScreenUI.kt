@@ -1,3 +1,6 @@
+package screens
+
+import models.BirdImage
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,43 +17,37 @@ import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.currentOrThrow
-import dev.icerock.moko.mvvm.compose.getViewModel
-import dev.icerock.moko.mvvm.compose.viewModelFactory
+import com.arkivanov.decompose.extensions.compose.jetbrains.subscribeAsState
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import navigation.BirdsUiState
+import navigation.ListScreenComponent
+import navigation.ListScreenEvent
 
-class BirdsListScreen: Screen  {
-    @Composable
-    override fun Content() {
-        val navigator = LocalNavigator.currentOrThrow
+@Composable
+fun ListScreenUI(component: ListScreenComponent) {
 
-        val birdsViewModel = getViewModel(Unit, viewModelFactory { BirdsViewModel() })
-        val uiState by birdsViewModel.uiState.collectAsState()
-        LaunchedEffect(birdsViewModel) {
-            if (uiState.images.isEmpty()) {
-                birdsViewModel.updateImages()
-            }
+    val uiState by component.uiState.subscribeAsState()
+
+    LaunchedEffect(component) {
+        if (uiState.images.isEmpty()) {
+            component.updateImages()
         }
-        BirdsPage(
-            uiState,
-            onCategorySelect = {
-                birdsViewModel.selectCategory(it)
-            },
-            onBirdSelect = {
-                birdsViewModel.selectBird(it)
-                navigator.push(BirdsDetailsScreen(it))
-            }
-        )
     }
+    BirdsPage(
+        uiState,
+        onCategorySelect = {
+            component.onEvent(ListScreenEvent.SelectBirdCategory(it))
+        },
+        onBirdSelect = {
+            component.onEvent(ListScreenEvent.SelectBird(it))
+        }
+    )
 }
 
 @Composable
@@ -76,7 +73,6 @@ fun BirdsPage(
                     Text(category)
                 }
             }
-
         }
 
         AnimatedVisibility(visible = uiState.selectedImages.isNotEmpty()) {

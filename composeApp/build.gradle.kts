@@ -37,6 +37,7 @@ kotlin {
             implementation(libs.compose.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.decompose)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
@@ -55,9 +56,10 @@ kotlin {
             implementation(libs.moko.mvvm.core)
             implementation(libs.moko.mvvm.compose)
             implementation(libs.kamel)
-            implementation(libs.voyager.navigator)
-            implementation(libs.voyager.tabNavigator)
-            implementation(libs.voyager.transitions)
+
+            implementation(libs.decompose)
+            implementation(libs.decompose.jetbrains)
+            implementation(libs.kotlinx.serialization.json)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
